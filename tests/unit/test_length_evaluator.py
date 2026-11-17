@@ -1,5 +1,6 @@
 import pytest
 
+from llm_quality.core.results import EvaluationResult
 from llm_quality.evaluators.length import ResponseLengthEvaluator
 
 
@@ -8,8 +9,11 @@ def test_evaluator_passes_response_within_limits():
 
     result = evaluator.evaluate("Hello world")
 
+    assert isinstance(result, EvaluationResult)
+    assert result.evaluator_name == "response_length"
     assert result.passed is True
-    assert result.actual_length == 11
+    assert result.score == 1.0
+    assert result.details["actual_length"] == 11
 
 
 def test_evaluator_fails_response_below_minimum():
@@ -18,7 +22,8 @@ def test_evaluator_fails_response_below_minimum():
     result = evaluator.evaluate("Hi")
 
     assert result.passed is False
-    assert result.actual_length == 2
+    assert result.score == 0.0
+    assert result.details["actual_length"] == 2
 
 
 def test_evaluator_fails_response_above_maximum():
@@ -27,7 +32,8 @@ def test_evaluator_fails_response_above_maximum():
     result = evaluator.evaluate("This is too long")
 
     assert result.passed is False
-    assert result.actual_length == 16
+    assert result.score == 0.0
+    assert result.details["actual_length"] == 16
 
 
 def test_evaluator_rejects_invalid_minimum():
