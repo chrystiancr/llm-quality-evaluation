@@ -1,5 +1,5 @@
 from llm_quality.core.pipeline import EvaluationPipeline
-from llm_quality.core.results import EvaluationResult
+from llm_quality.core.report import EvaluationReport
 from llm_quality.evaluators.keywords import KeywordEvaluator
 from llm_quality.evaluators.length import ResponseLengthEvaluator
 
@@ -9,11 +9,11 @@ def test_pipeline_runs_single_evaluator():
         evaluators=[ResponseLengthEvaluator(min_length=5, max_length=20)]
     )
 
-    results = pipeline.run("Hello world")
+    report = pipeline.run("Hello world")
 
-    assert len(results) == 1
-    assert isinstance(results[0], EvaluationResult)
-    assert results[0].passed is True
+    assert isinstance(report, EvaluationReport)
+    assert report.total_evaluations == 1
+    assert report.passed is True
 
 
 def test_pipeline_runs_multiple_evaluators():
@@ -24,11 +24,12 @@ def test_pipeline_runs_multiple_evaluators():
         ]
     )
 
-    results = pipeline.run("Hello world")
+    report = pipeline.run("Hello world")
 
-    assert len(results) == 2
-    assert results[0].passed is True
-    assert results[1].passed is False
+    assert report.total_evaluations == 2
+    assert report.passed_evaluations == 1
+    assert report.failed_evaluations == 1
+    assert report.passed is False
 
 
 def test_pipeline_combines_different_evaluators():
@@ -39,16 +40,18 @@ def test_pipeline_combines_different_evaluators():
         ]
     )
 
-    results = pipeline.run("Python is useful for AI.")
+    report = pipeline.run("Python is useful for AI.")
 
-    assert len(results) == 2
-    assert all(isinstance(result, EvaluationResult) for result in results)
-    assert all(result.passed for result in results)
+    assert report.total_evaluations == 2
+    assert report.passed_evaluations == 2
+    assert report.passed is True
 
 
-def test_pipeline_returns_empty_list_without_evaluators():
+def test_pipeline_returns_empty_report_without_evaluators():
     pipeline = EvaluationPipeline(evaluators=[])
 
-    results = pipeline.run("Hello world")
+    report = pipeline.run("Hello world")
 
-    assert results == []
+    assert isinstance(report, EvaluationReport)
+    assert report.total_evaluations == 0
+    assert report.passed is False
