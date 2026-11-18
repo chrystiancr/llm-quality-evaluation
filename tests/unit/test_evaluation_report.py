@@ -1,3 +1,4 @@
+import pytest
 from llm_quality.core.report import EvaluationReport
 from llm_quality.core.results import EvaluationResult
 
@@ -25,7 +26,7 @@ def test_report_calculates_overall_score():
         ]
     )
 
-    assert report.overall_score == 0.8
+assert report.overall_score == pytest.approx(0.8)
 
 
 def test_report_passes_when_all_evaluations_pass():
