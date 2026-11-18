@@ -41,6 +41,26 @@ def test_keyword_evaluator_is_case_insensitive():
     assert result.score == 1.0
 
 
+def test_keyword_evaluator_does_not_match_partial_words():
+    evaluator = KeywordEvaluator(keywords=["AI"])
+
+    result = evaluator.evaluate("Training is important.")
+
+    assert result.passed is False
+    assert result.score == 0.0
+    assert result.details["found_keywords"] == []
+    assert result.details["missing_keywords"] == ["AI"]
+
+
+def test_keyword_evaluator_matches_keywords_with_punctuation():
+    evaluator = KeywordEvaluator(keywords=["AI", "Python"])
+
+    result = evaluator.evaluate("AI, Python, and automation.")
+
+    assert result.passed is True
+    assert result.score == 1.0
+
+
 def test_keyword_evaluator_rejects_empty_keyword_list():
     with pytest.raises(ValueError):
         KeywordEvaluator(keywords=[])
